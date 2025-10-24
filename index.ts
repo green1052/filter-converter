@@ -7,9 +7,7 @@ import {existsSync} from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 // @ts-ignore
-import {
-    createConversionResult
-} from "./node_modules/@adguard/agtree/dist/converter/base-interfaces/conversion-result.js";
+import {createConversionResult} from "./node_modules/@adguard/agtree/dist/converter/base-interfaces/conversion-result.js";
 // @ts-ignore
 import {clone} from "./node_modules/@adguard/agtree/dist/utils/clone.js";
 // @ts-ignore
@@ -126,7 +124,6 @@ export async function runAction() {
                     const raw = await fs.readFile(input, "utf-8");
                     const converted = convert(raw, target);
 
-                    // input 파일의 상대 경로 계산
                     let relativePath = input;
                     for (const basePath of targetFiles) {
                         if (input.startsWith(basePath)) {
@@ -135,10 +132,8 @@ export async function runAction() {
                         }
                     }
 
-                    // 출력 폴더 결정
                     const outDirFinal = inPlace ? path.dirname(input) : path.join(outDir, path.dirname(relativePath));
 
-                    // 출력 파일명 생성
                     const outName = getOutputName(path.basename(input), namePattern, target);
                     const outPath = path.join(outDirFinal, outName);
 
