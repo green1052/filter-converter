@@ -4,9 +4,6 @@
     <option name="optimizeImportsOnTheFly" value="true" />
   </component>
   <component name="KubernetesApiProvider"><![CDATA[{}]]></component>
-  <component name="MaliciousPackageCheckinHandlerState">
-    <option name="packageCheck" value="true" />
-  </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
       <profile-state>
