@@ -1,22 +1,22 @@
-name: "Filter Converter"
-description: "Convert filter lists to AdGuard/uBlock formats automatically"
-author: "green1052"
-
+name: Filter Converter
+description: Convert filter lists to AdGuard/uBlock formats automatically
+author: green1052
 inputs:
-    paths:
-        description: "List of files or directories (one per line)"
-        required: true
-    out_dir:
-        description: "Output directory for converted files"
-        required: false
-    targets:
-        description: "Conversion targets: one per line (e.g., adguard, ublock)"
-        required: true
-    name_pattern:
-        description: "Output file naming pattern (e.g. [name]_[target].txt)"
-        required: false
-        default: "[name]_[target].txt"
-
+  paths:
+    description: List of files or directories (one per line)
+    required: true
+  out_dir:
+    description: Output directory for converted files
+    required: false
+  targets:
+    description: "Conversion targets: one per line (e.g., adguard, ublock)"
+    default: |
+      - adguard
+      - ublock
+  name_pattern:
+    description: "Output file naming pattern (e.g. [name]_[target].txt)"
+    required: false
+    default: "[name]_[target].txt"
 runs:
-    using: "node20"
-    main: "dist/index.js"
+  using: node20
+  main: dist/index.js
