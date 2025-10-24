@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Convert
-        uses: green1052/filter-converter@v1.0.7
+        uses: green1052/filter-converter@1.0.7
         with:
           paths: |
               - a
