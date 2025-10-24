@@ -10,7 +10,9 @@ inputs:
     required: false
   targets:
     description: "Conversion targets: one per line (e.g., adguard, ublock)"
-    required: true
+    default: |
+      - adguard
+      - ublock
   name_pattern:
     description: "Output file naming pattern (e.g. [name]_[target].txt)"
     required: false
