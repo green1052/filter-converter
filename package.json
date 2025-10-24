@@ -1,0 +1,30 @@
+{
+    "name": "filter-converter",
+    "version": "1.0.0",
+    "description": "Convert filter lists to AdGuard/uBlock formats automatically",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "scripts": {
+        "build": "tsc"
+    },
+    "type": "module",
+    "keywords": [
+        "adguard",
+        "ublock",
+        "filters",
+        "converter",
+        "github-action"
+    ],
+    "author": "green1052",
+    "packageManager": "pnpm@10.19.0",
+    "devDependencies": {
+        "@types/node": "^24.9.1",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "@actions/core": "^1.11.1",
+        "@actions/github": "^6.0.1",
+        "@adguard/agtree": "^3.2.4"
+    }
+}
