@@ -46450,27 +46450,40 @@ async function ensureDir(dir) {
         await fs.mkdir(dir, { recursive: true });
 }
 async function runAction() {
-    const targetFiles = coreExports.getMultilineInput("paths").filter(Boolean);
-    const outDir = coreExports.getInput("out_dir");
-    const inPlace = !outDir;
-    const validTargets = ["adguard", "ublock"];
-    const targets = coreExports.getMultilineInput("targets")
-        .map(t => t.trim())
-        .filter(t => validTargets.includes(t));
-    const namePattern = coreExports.getInput("name_pattern");
-    const files = await getFiles(targetFiles);
-    if (files.length === 0)
-        return;
-    for (const target of targets) {
-        for (const input of files) {
-            const raw = await fs.readFile(input, "utf-8");
-            const converted = convert(raw, target);
-            const outName = getOutputName(input, namePattern, target);
-            const outDirFinal = inPlace ? path.dirname(input) : outDir;
-            await ensureDir(outDirFinal);
-            const outPath = path.join(outDirFinal, outName);
-            await fs.writeFile(outPath, converted, "utf-8");
+    try {
+        const targetFiles = coreExports.getMultilineInput("paths").filter(Boolean);
+        const outDir = coreExports.getInput("out_dir");
+        const inPlace = !outDir;
+        const validTargets = ["adguard", "ublock"];
+        const targets = coreExports.getMultilineInput("targets")
+            .map(t => t.trim())
+            .filter(t => validTargets.includes(t));
+        const namePattern = coreExports.getInput("name_pattern");
+        const files = await getFiles(targetFiles);
+        if (files.length === 0) {
+            coreExports.warning("No valid files found.");
+            return;
         }
+        for (const target of targets) {
+            for (const input of files) {
+                try {
+                    const raw = await fs.readFile(input, "utf-8");
+                    const converted = convert(raw, target);
+                    const outName = getOutputName(input, namePattern, target);
+                    const outDirFinal = inPlace ? path.dirname(input) : outDir;
+                    await ensureDir(outDirFinal);
+                    const outPath = path.join(outDirFinal, outName);
+                    await fs.writeFile(outPath, converted, "utf-8");
+                    coreExports.info(`✅ Successfully converted "${input}" to "${outPath}"`);
+                }
+                catch (fileError) {
+                    coreExports.error(`❌ Failed to convert file "${input}": ${fileError}`);
+                }
+            }
+        }
+    }
+    catch (error) {
+        coreExports.setFailed(`Action failed: ${error}`);
     }
 }
 runAction();

@@ -1,6 +1,6 @@
 {
     "name": "filter-converter",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "Convert filter lists to AdGuard/uBlock formats automatically",
     "exports": {
         ".": "./dist/index.js"
