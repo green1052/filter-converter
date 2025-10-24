@@ -52,12 +52,12 @@ async function getFiles(paths: string[]): Promise<string[]> {
     return results;
 }
 
-function convertToABo(filterListNode: FilterList, tolerant = true) {
+function convertToUbo(filterListNode: FilterList, tolerant = true) {
     const conversionMap = new MultiValueMap<number, AnyRule>();
 
     for (let i = 0; i < filterListNode.children.length; i += 1) {
         try {
-            const convertedRules = RuleConverter.convertToAdg(filterListNode.children[i]);
+            const convertedRules = RuleConverter.convertToUbo(filterListNode.children[i]);
             if (convertedRules.isConverted) {
                 conversionMap.add(i, ...convertedRules.result);
             }
@@ -87,7 +87,7 @@ function convertToABo(filterListNode: FilterList, tolerant = true) {
 function convert(raw: string, target: "adguard" | "ublock") {
     const filterList = FilterListParser.parse(raw);
     const conversionResult =
-        target === "adguard" ? FilterListConverter.convertToAdg(filterList) : convertToABo(filterList);
+        target === "adguard" ? FilterListConverter.convertToAdg(filterList) : convertToUbo(filterList);
     return FilterListGenerator.generate(conversionResult.result);
 }
 

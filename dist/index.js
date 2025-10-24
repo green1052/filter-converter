@@ -46414,11 +46414,11 @@ async function getFiles(paths) {
     }
     return results;
 }
-function convertToABo(filterListNode, tolerant = true) {
+function convertToUbo(filterListNode, tolerant = true) {
     const conversionMap = new MultiValueMap();
     for (let i = 0; i < filterListNode.children.length; i += 1) {
         try {
-            const convertedRules = RuleConverter.convertToAdg(filterListNode.children[i]);
+            const convertedRules = RuleConverter.convertToUbo(filterListNode.children[i]);
             if (convertedRules.isConverted) {
                 conversionMap.add(i, ...convertedRules.result);
             }
@@ -46445,7 +46445,7 @@ function convertToABo(filterListNode, tolerant = true) {
 }
 function convert(raw, target) {
     const filterList = FilterListParser.parse(raw);
-    const conversionResult = target === "adguard" ? FilterListConverter.convertToAdg(filterList) : convertToABo(filterList);
+    const conversionResult = target === "adguard" ? FilterListConverter.convertToAdg(filterList) : convertToUbo(filterList);
     return FilterListGenerator.generate(conversionResult.result);
 }
 async function ensureDir(dir) {
