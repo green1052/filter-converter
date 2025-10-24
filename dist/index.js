@@ -46488,7 +46488,7 @@ async function runAction() {
                             }
                         }
                         outDirFinal = path.join(outDir, targetFolder, path.dirname(relativePath));
-                        outName = getOutputName(path.basename(input), namePattern, target);
+                        outName = path.basename(input);
                     }
                     const outPath = path.join(outDirFinal, outName);
                     await ensureDir(outDirFinal);
