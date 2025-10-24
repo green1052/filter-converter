@@ -7,9 +7,7 @@ import {existsSync} from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 // @ts-ignore
-import {
-    createConversionResult
-} from "./node_modules/@adguard/agtree/dist/converter/base-interfaces/conversion-result.js";
+import {createConversionResult} from "./node_modules/@adguard/agtree/dist/converter/base-interfaces/conversion-result.js";
 // @ts-ignore
 import {clone} from "./node_modules/@adguard/agtree/dist/utils/clone.js";
 // @ts-ignore
@@ -100,35 +98,46 @@ async function ensureDir(dir: string) {
 }
 
 export async function runAction() {
-    const targetFiles = core.getMultilineInput("paths").filter(Boolean);
-    const outDir = core.getInput("out_dir");
+    try {
+        const targetFiles = core.getMultilineInput("paths").filter(Boolean);
+        const outDir = core.getInput("out_dir");
 
-    const inPlace = !outDir;
+        const inPlace = !outDir;
 
-    const validTargets = ["adguard", "ublock"] as const;
+        const validTargets = ["adguard", "ublock"] as const;
 
-    const targets = core.getMultilineInput("targets")
-        .map(t => t.trim())
-        .filter(t => validTargets.includes(t as any)) as ("adguard" | "ublock")[];
+        const targets = core.getMultilineInput("targets")
+            .map(t => t.trim())
+            .filter(t => validTargets.includes(t as any)) as ("adguard" | "ublock")[];
 
-    const namePattern = core.getInput("name_pattern");
-    const files = await getFiles(targetFiles);
+        const namePattern = core.getInput("name_pattern");
+        const files = await getFiles(targetFiles);
 
-    if (files.length === 0) return;
-
-    for (const target of targets) {
-        for (const input of files) {
-            const raw = await fs.readFile(input, "utf-8");
-            const converted = convert(raw, target);
-
-            const outName = getOutputName(input, namePattern, target);
-
-            const outDirFinal = inPlace ? path.dirname(input) : outDir;
-            await ensureDir(outDirFinal);
-            const outPath = path.join(outDirFinal, outName);
-
-            await fs.writeFile(outPath, converted, "utf-8");
+        if (files.length === 0) {
+            core.warning("No valid files found.");
+            return;
         }
+
+        for (const target of targets) {
+            for (const input of files) {
+                try {
+                    const raw = await fs.readFile(input, "utf-8");
+                    const converted = convert(raw, target);
+
+                    const outName = getOutputName(input, namePattern, target);
+                    const outDirFinal = inPlace ? path.dirname(input) : outDir;
+                    await ensureDir(outDirFinal);
+                    const outPath = path.join(outDirFinal, outName);
+
+                    await fs.writeFile(outPath, converted, "utf-8");
+                    core.info(`✅ Successfully converted "${input}" to "${outPath}"`);
+                } catch (fileError) {
+                    core.error(`❌ Failed to convert file "${input}": ${fileError}`);
+                }
+            }
+        }
+    } catch (error) {
+        core.setFailed(`Action failed: ${error}`);
     }
 }
 
