@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Convert
-        uses: green1052/filter-converter@v1.0.1
+        uses: green1052/filter-converter@1.0.5
         with:
           paths: |
-            - ./a
-            - ./b
-            - ./c
+            - a
+            - b
+            - c
           out_dir: dist
 ```
