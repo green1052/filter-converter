@@ -7,7 +7,9 @@ import {existsSync} from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 // @ts-ignore
-import {createConversionResult} from "./node_modules/@adguard/agtree/dist/converter/base-interfaces/conversion-result.js";
+import {
+    createConversionResult
+} from "./node_modules/@adguard/agtree/dist/converter/base-interfaces/conversion-result.js";
 // @ts-ignore
 import {clone} from "./node_modules/@adguard/agtree/dist/utils/clone.js";
 // @ts-ignore
@@ -124,18 +126,32 @@ export async function runAction() {
                     const raw = await fs.readFile(input, "utf-8");
                     const converted = convert(raw, target);
 
-                    const outName = getOutputName(input, namePattern, target);
-                    const outDirFinal = inPlace ? path.dirname(input) : outDir;
-                    await ensureDir(outDirFinal);
+                    // input 파일의 상대 경로 계산
+                    let relativePath = input;
+                    for (const basePath of targetFiles) {
+                        if (input.startsWith(basePath)) {
+                            relativePath = path.relative(basePath, input);
+                            break;
+                        }
+                    }
+
+                    // 출력 폴더 결정
+                    const outDirFinal = inPlace ? path.dirname(input) : path.join(outDir, path.dirname(relativePath));
+
+                    // 출력 파일명 생성
+                    const outName = getOutputName(path.basename(input), namePattern, target);
                     const outPath = path.join(outDirFinal, outName);
 
+                    await ensureDir(outDirFinal);
                     await fs.writeFile(outPath, converted, "utf-8");
-                    core.info(`✅ Successfully converted "${input}" to "${outPath}"`);
+
+                    core.info(`✅ Successfully converted "${input}, ${converted.length}" to "${outPath}"`);
                 } catch (fileError) {
                     core.error(`❌ Failed to convert file "${input}": ${fileError}`);
                 }
             }
         }
+
     } catch (error) {
         core.setFailed(`Action failed: ${error}`);
     }

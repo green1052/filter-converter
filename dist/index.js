@@ -46469,12 +46469,22 @@ async function runAction() {
                 try {
                     const raw = await fs.readFile(input, "utf-8");
                     const converted = convert(raw, target);
-                    const outName = getOutputName(input, namePattern, target);
-                    const outDirFinal = inPlace ? path.dirname(input) : outDir;
-                    await ensureDir(outDirFinal);
+                    // input 파일의 상대 경로 계산
+                    let relativePath = input;
+                    for (const basePath of targetFiles) {
+                        if (input.startsWith(basePath)) {
+                            relativePath = path.relative(basePath, input);
+                            break;
+                        }
+                    }
+                    // 출력 폴더 결정
+                    const outDirFinal = inPlace ? path.dirname(input) : path.join(outDir, path.dirname(relativePath));
+                    // 출력 파일명 생성
+                    const outName = getOutputName(path.basename(input), namePattern, target);
                     const outPath = path.join(outDirFinal, outName);
+                    await ensureDir(outDirFinal);
                     await fs.writeFile(outPath, converted, "utf-8");
-                    coreExports.info(`✅ Successfully converted "${input}" to "${outPath}"`);
+                    coreExports.info(`✅ Successfully converted "${input}, ${converted.length}" to "${outPath}"`);
                 }
                 catch (fileError) {
                     coreExports.error(`❌ Failed to convert file "${input}": ${fileError}`);
