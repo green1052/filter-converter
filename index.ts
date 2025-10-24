@@ -92,13 +92,15 @@ function convert(raw: string, target: "adguard" | "ublock") {
 }
 
 async function ensureDir(dir: string) {
-    if (!existsSync(dir))
+    if (!existsSync(dir)) {
         await fs.mkdir(dir, {recursive: true});
+    }
 }
 
 async function clearDir(dir: string) {
-    if (existsSync(dir))
+    if (existsSync(dir)) {
         await fs.rm(dir, {recursive: true, force: true});
+    }
 }
 
 export async function runAction() {
@@ -121,7 +123,10 @@ export async function runAction() {
             return;
         }
 
-        if (!inPlace) await clearDir(outDir);
+        // 빌드 전에 기존 출력 폴더 삭제
+        if (!inPlace && outDir) {
+            await clearDir(outDir);
+        }
 
         for (const target of targets) {
             for (const input of files) {
@@ -138,24 +143,17 @@ export async function runAction() {
                     } else {
                         const targetFolder = target === "adguard" ? "Adg" : "uBo";
 
+                        // basePath 기준으로 상대 경로 계산
                         let relativePath = input;
-                        let parentFolder = "";
                         for (const basePath of targetFiles) {
                             if (input.startsWith(basePath)) {
                                 relativePath = path.relative(basePath, input);
-
-                                // 부모 폴더 이름 가져오기
-                                parentFolder = path.basename(path.dirname(input));
                                 break;
                             }
                         }
 
-                        outDirFinal = path.join(
-                            outDir,
-                            targetFolder,
-                            parentFolder,
-                            path.dirname(relativePath)
-                        );
+                        // 원본 폴더 구조 그대로 유지
+                        outDirFinal = path.join(outDir, targetFolder, path.dirname(relativePath));
                         outName = path.basename(input);
                     }
 

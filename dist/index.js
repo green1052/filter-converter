@@ -46449,12 +46449,14 @@ function convert(raw, target) {
     return FilterListGenerator.generate(conversionResult.result);
 }
 async function ensureDir(dir) {
-    if (!existsSync(dir))
+    if (!existsSync(dir)) {
         await fs.mkdir(dir, { recursive: true });
+    }
 }
 async function clearDir(dir) {
-    if (existsSync(dir))
+    if (existsSync(dir)) {
         await fs.rm(dir, { recursive: true, force: true });
+    }
 }
 async function runAction() {
     try {
@@ -46471,8 +46473,10 @@ async function runAction() {
             coreExports.warning("No valid files found.");
             return;
         }
-        if (!inPlace)
+        // 빌드 전에 기존 출력 폴더 삭제
+        if (!inPlace && outDir) {
             await clearDir(outDir);
+        }
         for (const target of targets) {
             for (const input of files) {
                 try {
@@ -46486,17 +46490,16 @@ async function runAction() {
                     }
                     else {
                         const targetFolder = target === "adguard" ? "Adg" : "uBo";
+                        // basePath 기준으로 상대 경로 계산
                         let relativePath = input;
-                        let parentFolder = "";
                         for (const basePath of targetFiles) {
                             if (input.startsWith(basePath)) {
                                 relativePath = path.relative(basePath, input);
-                                // 부모 폴더 이름 가져오기
-                                parentFolder = path.basename(path.dirname(input));
                                 break;
                             }
                         }
-                        outDirFinal = path.join(outDir, targetFolder, parentFolder, path.dirname(relativePath));
+                        // 원본 폴더 구조 그대로 유지
+                        outDirFinal = path.join(outDir, targetFolder, path.dirname(relativePath));
                         outName = path.basename(input);
                     }
                     const outPath = path.join(outDirFinal, outName);
