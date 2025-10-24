@@ -46452,6 +46452,10 @@ async function ensureDir(dir) {
     if (!existsSync(dir))
         await fs.mkdir(dir, { recursive: true });
 }
+async function clearDir(dir) {
+    if (existsSync(dir))
+        await fs.rm(dir, { recursive: true, force: true });
+}
 async function runAction() {
     try {
         const targetFiles = coreExports.getMultilineInput("paths").filter(Boolean);
@@ -46467,6 +46471,8 @@ async function runAction() {
             coreExports.warning("No valid files found.");
             return;
         }
+        if (!inPlace)
+            await clearDir(outDir);
         for (const target of targets) {
             for (const input of files) {
                 try {
@@ -46481,13 +46487,16 @@ async function runAction() {
                     else {
                         const targetFolder = target === "adguard" ? "Adg" : "uBo";
                         let relativePath = input;
+                        let parentFolder = "";
                         for (const basePath of targetFiles) {
                             if (input.startsWith(basePath)) {
                                 relativePath = path.relative(basePath, input);
+                                // 부모 폴더 이름 가져오기
+                                parentFolder = path.basename(path.dirname(input));
                                 break;
                             }
                         }
-                        outDirFinal = path.join(outDir, targetFolder, path.dirname(relativePath));
+                        outDirFinal = path.join(outDir, targetFolder, parentFolder, path.dirname(relativePath));
                         outName = path.basename(input);
                     }
                     const outPath = path.join(outDirFinal, outName);

@@ -7,7 +7,9 @@ import {existsSync} from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 // @ts-ignore
-import {createConversionResult} from "./node_modules/@adguard/agtree/dist/converter/base-interfaces/conversion-result.js";
+import {
+    createConversionResult
+} from "./node_modules/@adguard/agtree/dist/converter/base-interfaces/conversion-result.js";
 // @ts-ignore
 import {clone} from "./node_modules/@adguard/agtree/dist/utils/clone.js";
 // @ts-ignore
@@ -90,7 +92,13 @@ function convert(raw: string, target: "adguard" | "ublock") {
 }
 
 async function ensureDir(dir: string) {
-    if (!existsSync(dir)) await fs.mkdir(dir, {recursive: true});
+    if (!existsSync(dir))
+        await fs.mkdir(dir, {recursive: true});
+}
+
+async function clearDir(dir: string) {
+    if (existsSync(dir))
+        await fs.rm(dir, {recursive: true, force: true});
 }
 
 export async function runAction() {
@@ -113,6 +121,8 @@ export async function runAction() {
             return;
         }
 
+        if (!inPlace) await clearDir(outDir);
+
         for (const target of targets) {
             for (const input of files) {
                 try {
@@ -129,14 +139,23 @@ export async function runAction() {
                         const targetFolder = target === "adguard" ? "Adg" : "uBo";
 
                         let relativePath = input;
+                        let parentFolder = "";
                         for (const basePath of targetFiles) {
                             if (input.startsWith(basePath)) {
                                 relativePath = path.relative(basePath, input);
+
+                                // 부모 폴더 이름 가져오기
+                                parentFolder = path.basename(path.dirname(input));
                                 break;
                             }
                         }
 
-                        outDirFinal = path.join(outDir, targetFolder, path.dirname(relativePath));
+                        outDirFinal = path.join(
+                            outDir,
+                            targetFolder,
+                            parentFolder,
+                            path.dirname(relativePath)
+                        );
                         outName = path.basename(input);
                     }
 
