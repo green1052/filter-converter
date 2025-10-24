@@ -7,9 +7,7 @@ import {existsSync} from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 // @ts-ignore
-import {
-    createConversionResult
-} from "./node_modules/@adguard/agtree/dist/converter/base-interfaces/conversion-result.js";
+import {createConversionResult} from "./node_modules/@adguard/agtree/dist/converter/base-interfaces/conversion-result.js";
 // @ts-ignore
 import {clone} from "./node_modules/@adguard/agtree/dist/utils/clone.js";
 // @ts-ignore
