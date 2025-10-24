@@ -46391,17 +46391,25 @@ async function getFiles(paths) {
         try {
             const stat = await fs.stat(p);
             if (stat.isDirectory()) {
-                const files = (await fs.readdir(p, { recursive: true }))
-                    .filter((file) => file.endsWith(".txt"))
-                    .map((file) => path.join(p, file));
-                results.push(...files);
+                const files = await fs.readdir(p);
+                for (const f of files) {
+                    const fullPath = path.join(p, f);
+                    const statChild = await fs.stat(fullPath);
+                    if (statChild.isDirectory()) {
+                        results.push(...await getFiles([fullPath]));
+                    }
+                    else if (fullPath.endsWith(".txt")) {
+                        results.push(fullPath);
+                    }
+                }
                 continue;
             }
             if (stat.isFile() && p.endsWith(".txt")) {
                 results.push(p);
             }
         }
-        catch {
+        catch (e) {
+            coreExports.warning(`Failed to read path "${p}": ${e}`);
         }
     }
     return results;
@@ -46423,10 +46431,7 @@ function convertToABo(filterListNode, tolerant = true) {
     if (conversionMap.size === 0) {
         return createConversionResult(filterListNode, false);
     }
-    const convertedFilterList = {
-        type: "FilterList",
-        children: []
-    };
+    const convertedFilterList = { type: "FilterList", children: [] };
     for (let i = 0; i < filterListNode.children.length; i += 1) {
         const rules = conversionMap.get(i);
         if (rules) {
@@ -46440,9 +46445,7 @@ function convertToABo(filterListNode, tolerant = true) {
 }
 function convert(raw, target) {
     const filterList = FilterListParser.parse(raw);
-    const conversionResult = target === "adguard"
-        ? FilterListConverter.convertToAdg(filterList)
-        : convertToABo(filterList);
+    const conversionResult = target === "adguard" ? FilterListConverter.convertToAdg(filterList) : convertToABo(filterList);
     return FilterListGenerator.generate(conversionResult.result);
 }
 async function ensureDir(dir) {
@@ -46456,8 +46459,8 @@ async function runAction() {
         const inPlace = !outDir;
         const validTargets = ["adguard", "ublock"];
         const targets = coreExports.getMultilineInput("targets")
-            .map(t => t.trim())
-            .filter(t => validTargets.includes(t));
+            .map((t) => t.trim())
+            .filter((t) => validTargets.includes(t));
         const namePattern = coreExports.getInput("name_pattern");
         const files = await getFiles(targetFiles);
         if (files.length === 0) {
@@ -46469,22 +46472,28 @@ async function runAction() {
                 try {
                     const raw = await fs.readFile(input, "utf-8");
                     const converted = convert(raw, target);
-                    // input 파일의 상대 경로 계산
-                    let relativePath = input;
-                    for (const basePath of targetFiles) {
-                        if (input.startsWith(basePath)) {
-                            relativePath = path.relative(basePath, input);
-                            break;
-                        }
+                    let outDirFinal;
+                    let outName;
+                    if (inPlace) {
+                        outDirFinal = path.dirname(input);
+                        outName = getOutputName(path.basename(input), namePattern, target);
                     }
-                    // 출력 폴더 결정
-                    const outDirFinal = inPlace ? path.dirname(input) : path.join(outDir, path.dirname(relativePath));
-                    // 출력 파일명 생성
-                    const outName = getOutputName(path.basename(input), namePattern, target);
+                    else {
+                        const targetFolder = target === "adguard" ? "Adg" : "uBo";
+                        let relativePath = input;
+                        for (const basePath of targetFiles) {
+                            if (input.startsWith(basePath)) {
+                                relativePath = path.relative(basePath, input);
+                                break;
+                            }
+                        }
+                        outDirFinal = path.join(outDir, targetFolder, path.dirname(relativePath));
+                        outName = getOutputName(path.basename(input), namePattern, target);
+                    }
                     const outPath = path.join(outDirFinal, outName);
                     await ensureDir(outDirFinal);
                     await fs.writeFile(outPath, converted, "utf-8");
-                    coreExports.info(`✅ Successfully converted "${input}, ${converted.length}" to "${outPath}"`);
+                    coreExports.info(`✅ Successfully converted "${input}" → "${outPath}"`);
                 }
                 catch (fileError) {
                     coreExports.error(`❌ Failed to convert file "${input}": ${fileError}`);
