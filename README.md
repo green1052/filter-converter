@@ -11,12 +11,12 @@ jobs:
   convert:
     runs-on: ubuntu-latest
     steps:
-      - name: Convert filter lists
-        uses: green1052/filter-converter@v1.0.0
+      - name: Convert
+        uses: green1052/filter-converter@v1.0.1
         with:
-          input: filters.txt
-          output: converted-filters.txt
-          target:
-            - adguard
-            - ublock
+          paths: |
+            - ./a
+            - ./b
+            - ./c
+          out_dir: dist
 ```
