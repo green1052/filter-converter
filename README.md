@@ -4,7 +4,6 @@ Automatically convert filter lists to AdGuard/uBlock formats in your workflows u
 
 ```yml
 name: Convert Filter Lists
-
 on:
   workflow_dispatch:
 
@@ -15,9 +14,9 @@ jobs:
       - name: Convert filter lists
         uses: green1052/filter-converter@v1.0.0
         with:
-          input: "filters.txt"
-          output: "converted-filters.txt"
+          input: filters.txt
+          output: converted-filters.txt
           target:
-            - "adguard"
-            - "ublock"
+            - adguard
+            - ublock
 ```
