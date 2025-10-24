@@ -24,7 +24,6 @@
     },
     "dependencies": {
         "@actions/core": "^1.11.1",
-        "@actions/github": "^6.0.1",
-        "@adguard/agtree": "^3.2.4"
+        "@adguard/agtree": "3.2.4"
     }
 }
