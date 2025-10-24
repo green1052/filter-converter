@@ -46478,6 +46478,7 @@ async function runAction() {
             await clearDir(outDir);
         }
         for (const target of targets) {
+            const targetFolder = target === "adguard" ? "Adg" : "uBo";
             for (const input of files) {
                 try {
                     const raw = await fs.readFile(input, "utf-8");
@@ -46489,16 +46490,10 @@ async function runAction() {
                         outName = getOutputName(path.basename(input), namePattern, target);
                     }
                     else {
-                        const targetFolder = target === "adguard" ? "Adg" : "uBo";
-                        // basePath 기준으로 상대 경로 계산
-                        let relativePath = input;
-                        for (const basePath of targetFiles) {
-                            if (input.startsWith(basePath)) {
-                                relativePath = path.relative(basePath, input);
-                                break;
-                            }
-                        }
-                        // 원본 폴더 구조 그대로 유지
+                        // 원본 폴더 구조 그대로 유지 (최상위 폴더 포함)
+                        let matchedBase = targetFiles.find(basePath => input.startsWith(basePath)) || "";
+                        let relativePath = path.relative(path.dirname(matchedBase), input);
+                        // 최종 출력 경로
                         outDirFinal = path.join(outDir, targetFolder, path.dirname(relativePath));
                         outName = path.basename(input);
                     }
